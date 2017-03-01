@@ -28,10 +28,18 @@ import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 import yahoofinance.quotes.stock.StockQuote;
 
+import static com.udacity.stockhawk.data.PrefUtils.getStocks;
+
 public final class QuoteSyncJob {
+    // These statuses will be passed to the main ui after fetching stocks from api
+    private static final int STOCK_STATUS_OK = 0;
+    private static final int STOCK_STATUS_SERVER_DOWN = 1;
+    private static final int STOCK_STATUS_SERVER_INVALID = 2;
+
 
     private static final int ONE_OFF_ID = 2;
     private static final String ACTION_DATA_UPDATED = "com.udacity.stockhawk.ACTION_DATA_UPDATED";
+    private static final String ACTION_DATA_UPDATED_EXTRA_KEY = "stockUpdatedKey";
     private static final int PERIOD = 300000;
     private static final int INITIAL_BACKOFF = 10000;
     private static final int PERIODIC_ID = 1;
@@ -40,17 +48,38 @@ public final class QuoteSyncJob {
     private QuoteSyncJob() {
     }
 
+    public static String getDataUpdateAction() {
+        return ACTION_DATA_UPDATED;
+    }
+
+    public static String getDataUpdateActionExtraKey() {
+        return ACTION_DATA_UPDATED_EXTRA_KEY;
+    }
+
     static void getQuotes(Context context) {
 
-        Timber.d("Running sync job");
+        Timber.d("Running sync job Quotes");
 
         Calendar from = Calendar.getInstance();
         Calendar to = Calendar.getInstance();
         from.add(Calendar.YEAR, -YEARS_OF_HISTORY);
-
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
+        int status = STOCK_STATUS_OK;
         try {
+            // In this new design, we create a COPY of the previously successful/committed
+            // stocks. In onboarding, we simply use the default stocks list as our template and
+            // build from there. On the addition of a stock, we add it to an uncommitted copy of the
+            // previously saved preference stock bundle and attempt to fecth it from the server.
+            // If data fetch is successful, we commit the copy to the preferred stock list.
+            // If unsuccessful, we roll back to previous committed list.
+            Set<String> stockPref;
+            boolean isInitializedCopy = PrefUtils.isInitializedCopy(context);
+            if (isInitializedCopy) {
+                stockPref = PrefUtils.getStocksCopy(context);
+            } else {
+                stockPref = getStocks(context);
+            }
 
-            Set<String> stockPref = PrefUtils.getStocks(context);
             Set<String> stockCopy = new HashSet<>();
             stockCopy.addAll(stockPref);
             String[] stockArray = stockPref.toArray(new String[stockPref.size()]);
@@ -64,16 +93,25 @@ public final class QuoteSyncJob {
             Map<String, Stock> quotes = YahooFinance.get(stockArray);
             Iterator<String> iterator = stockCopy.iterator();
 
-            Timber.d(quotes.toString());
+            Timber.w(quotes.toString());
 
             ArrayList<ContentValues> quoteCVs = new ArrayList<>();
 
             while (iterator.hasNext()) {
                 String symbol = iterator.next();
 
-
                 Stock stock = quotes.get(symbol);
                 StockQuote quote = stock.getQuote();
+                // Check if Stock is null
+                if (quote.getPrice() == null) {
+                    // If null, send quote not valid code to Main Activity
+                    status = STOCK_STATUS_SERVER_INVALID;
+                    dataUpdatedIntent.putExtra(ACTION_DATA_UPDATED_EXTRA_KEY, status);
+                    context.sendBroadcast(dataUpdatedIntent);
+                    PrefUtils.deInitializeCopy(context);
+                    Timber.w("Stock not valid");
+                    continue;
+                }
 
                 float price = quote.getPrice().floatValue();
                 float change = quote.getChange().floatValue();
@@ -98,23 +136,28 @@ public final class QuoteSyncJob {
                 quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
                 quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
 
-
                 quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
 
                 quoteCVs.add(quoteCV);
-
             }
 
             context.getContentResolver()
                     .bulkInsert(
                             Contract.Quote.URI,
                             quoteCVs.toArray(new ContentValues[quoteCVs.size()]));
-
-            Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
+            if (status == STOCK_STATUS_OK) {
+                dataUpdatedIntent.putExtra(ACTION_DATA_UPDATED_EXTRA_KEY, status);
+                context.sendBroadcast(dataUpdatedIntent);
+                if (isInitializedCopy) {
+                    PrefUtils.commitStocksCopy(context);
+                    PrefUtils.deInitializeCopy(context);
+                }
+            }
+        } catch (IOException e) {
+            dataUpdatedIntent.putExtra(ACTION_DATA_UPDATED_EXTRA_KEY, STOCK_STATUS_SERVER_DOWN);
             context.sendBroadcast(dataUpdatedIntent);
-
-        } catch (IOException exception) {
-            Timber.e(exception, "Error fetching stock quotes");
+            PrefUtils.deInitializeCopy(context);
+            Timber.e(e, "Server Error fetching stock quotes");
         }
     }
 
@@ -163,8 +206,6 @@ public final class QuoteSyncJob {
             JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
 
             scheduler.schedule(builder.build());
-
-
         }
     }
 

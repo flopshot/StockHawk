@@ -2,8 +2,10 @@
     <string name="app_name">Stock Hawk</string>
 
     <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
+    <string name="pref_stocks_copy_initialized_key" translatable="false">initializedCopy</string>
 
     <string name="pref_stocks_key">stocks</string>
+    <string name="pref_stocks_copy_key">stocksCopy</string>
 
 
     <string name="pref_display_mode_key">displayMode</string>

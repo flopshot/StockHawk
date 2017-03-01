@@ -8,7 +8,10 @@ import com.udacity.stockhawk.R;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+
+import timber.log.Timber;
 
 public final class PrefUtils {
 
@@ -22,8 +25,6 @@ public final class PrefUtils {
 
         HashSet<String> defaultStocks = new HashSet<>(Arrays.asList(defaultStocksList));
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-
         boolean initialized = prefs.getBoolean(initializedKey, false);
 
         if (!initialized) {
@@ -33,8 +34,7 @@ public final class PrefUtils {
             editor.apply();
             return defaultStocks;
         }
-        return prefs.getStringSet(stocksKey, new HashSet<String>());
-
+        return new HashSet<>(prefs.getStringSet(stocksKey, new HashSet<String>()));
     }
 
     private static void editStockPref(Context context, String symbol, Boolean add) {
@@ -50,6 +50,53 @@ public final class PrefUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putStringSet(key, stocks);
+        editor.apply();
+    }
+
+    public static Set<String> getStocksCopy(Context context) {
+        String initializedKey = context.getString(R.string.pref_stocks_copy_initialized_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean initialized = prefs.getBoolean(initializedKey, false);
+        if (!initialized) {
+            throw new RuntimeException("Stocks Copy Not Initialized");
+        }
+        String stocksKey = context.getString(R.string.pref_stocks_copy_key);
+        return new HashSet<>(prefs.getStringSet(stocksKey, new HashSet<String>()));
+    }
+
+    public static void addStockUncommitted(Context context, String symbol) {
+        String stockKey = context.getString(R.string.pref_stocks_copy_key);
+        String initializedKey = context.getString(R.string.pref_stocks_copy_initialized_key);
+        Set<String> stocksCopy = getStocks(context);
+        stocksCopy.add(symbol);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putStringSet(stockKey, stocksCopy);
+        editor.putBoolean(initializedKey, true);
+        editor.apply();
+    }
+
+    public static boolean isInitializedCopy(Context context) {
+        String initializedKey = context.getString(R.string.pref_stocks_copy_initialized_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(initializedKey, false);
+    }
+
+    public static void commitStocksCopy(Context context) {
+        Set<String> stocksCopy = getStocksCopy(context);
+        String stocksKey = context.getString(R.string.pref_stocks_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putStringSet(stocksKey, stocksCopy);
+        editor.apply();
+    }
+
+    public static void deInitializeCopy(Context context) {
+        String initializedKey = context.getString(R.string.pref_stocks_copy_initialized_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(initializedKey, false);
         editor.apply();
     }
 

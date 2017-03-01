@@ -1,6 +1,9 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +26,7 @@ import android.widget.Toast;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
+import com.udacity.stockhawk.sync.FetchStockSymbolsTask;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 
 import butterknife.BindView;
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.error)
     TextView error;
     private StockAdapter adapter;
+    UpdateStatusReceiver dataUpdatedReceiver;
 
     @Override
     public void onClick(String symbol) {
@@ -52,6 +58,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //TODO: Continue to fix Broadcast From Update Stock status
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(QuoteSyncJob.getDataUpdateAction());
+        dataUpdatedReceiver = new UpdateStatusReceiver();
+        registerReceiver(dataUpdatedReceiver, filter);
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -81,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }).attachToRecyclerView(stockRecyclerView);
 
-
     }
 
     private boolean networkUp() {
@@ -93,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onRefresh() {
-
         QuoteSyncJob.syncImmediately(this);
 
         if (!networkUp() && adapter.getItemCount() == 0) {
@@ -114,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
         new AddStockDialog().show(getFragmentManager(), "StockDialogFragment");
+        // new FetchStockSymbolsTask(getApplicationContext()).execute(); //TODO: Remove after test
+        // Timber.w("Pressing Button to Start Symbols Task");//TODO: Remove after test
     }
 
     void addStock(String symbol) {
@@ -126,8 +138,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
 
-            PrefUtils.addStock(this, symbol);
+            PrefUtils.addStockUncommitted(getApplicationContext(), symbol);
             QuoteSyncJob.syncImmediately(this);
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -185,5 +198,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(dataUpdatedReceiver);
+        super.onDestroy();
+    }
+
+    public class UpdateStatusReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int msg;
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                msg = extras.getInt(QuoteSyncJob.getDataUpdateActionExtraKey());
+            } else {
+                msg = -1;
+            }
+            Log.w("Intent String", String.valueOf(msg));
+        }
     }
 }
