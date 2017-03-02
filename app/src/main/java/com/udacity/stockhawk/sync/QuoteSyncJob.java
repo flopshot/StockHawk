@@ -107,9 +107,10 @@ public final class QuoteSyncJob {
                     // If null, send quote not valid code to Main Activity
                     status = STOCK_STATUS_SERVER_INVALID;
                     dataUpdatedIntent.putExtra(ACTION_DATA_UPDATED_EXTRA_KEY, status);
+                    dataUpdatedIntent.putExtra(Contract.Quote.COLUMN_SYMBOL, symbol);
                     context.sendBroadcast(dataUpdatedIntent);
                     PrefUtils.deInitializeCopy(context);
-                    Timber.w("Stock not valid");
+                    Timber.w(symbol + " Stock not valid");
                     continue;
                 }
 
@@ -127,7 +128,7 @@ public final class QuoteSyncJob {
                     historyBuilder.append(it.getDate().getTimeInMillis());
                     historyBuilder.append(", ");
                     historyBuilder.append(it.getClose());
-                    historyBuilder.append("\n");
+                    historyBuilder.append(", ");
                 }
 
                 ContentValues quoteCV = new ContentValues();

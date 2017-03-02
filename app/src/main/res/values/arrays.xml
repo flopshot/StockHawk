@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--DEFAULT STOCK ARRAY IF USER DEFINED STOCKS NOT INITIALIZED-->
     <string-array name="default_stocks">
         <item>@string/default_stocks_apple</item>
         <item>@string/default_stocks_yahoo</item>

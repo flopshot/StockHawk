@@ -26,7 +26,6 @@ import android.widget.Toast;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
-import com.udacity.stockhawk.sync.FetchStockSymbolsTask;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 
 import butterknife.BindView;
@@ -37,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         SwipeRefreshLayout.OnRefreshListener,
         StockAdapter.StockAdapterOnClickHandler {
 
+    private static final String DIALOG_FRAGMENT_TAG = "StockDialogFragment";
     private static final int STOCK_LOADER = 0;
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
@@ -52,6 +52,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onClick(String symbol) {
+        Intent historicalTrendIntent = new Intent();
+        historicalTrendIntent.setClassName(getApplicationContext(), HistoryActivity.class.getName());
+        historicalTrendIntent.putExtra(Contract.Quote.COLUMN_SYMBOL, symbol);
+        historicalTrendIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(historicalTrendIntent);
         Timber.d("Symbol clicked: %s", symbol);
     }
 
@@ -59,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //TODO: Continue to fix Broadcast From Update Stock status
         IntentFilter filter = new IntentFilter();
         filter.addAction(QuoteSyncJob.getDataUpdateAction());
         dataUpdatedReceiver = new UpdateStatusReceiver();
@@ -123,9 +127,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
-        new AddStockDialog().show(getFragmentManager(), "StockDialogFragment");
-        // new FetchStockSymbolsTask(getApplicationContext()).execute(); //TODO: Remove after test
-        // Timber.w("Pressing Button to Start Symbols Task");//TODO: Remove after test
+        new AddStockDialog().show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
     }
 
     void addStock(String symbol) {
@@ -213,6 +215,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Bundle extras = intent.getExtras();
             if (extras != null) {
                 msg = extras.getInt(QuoteSyncJob.getDataUpdateActionExtraKey());
+                String alertText;
+                switch (msg) {
+                    case 1:
+                        alertText = getResources().getString(R.string.add_stock_status_unavailable);
+                        Toast.makeText(getApplicationContext(), alertText, Toast.LENGTH_LONG).show();
+                        break;
+                    case 2:
+                        alertText = getResources().getString(R.string.add_stock_status_invalid);
+                        String symbol = extras.getString(Contract.Quote.COLUMN_SYMBOL);
+                        alertText = symbol + alertText;
+                        Toast.makeText(getApplicationContext(), alertText, Toast.LENGTH_LONG).show();
+                        break;
+                }
             } else {
                 msg = -1;
             }

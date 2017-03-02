@@ -65,12 +65,18 @@ public final class PrefUtils {
     }
 
     public static void addStockUncommitted(Context context, String symbol) {
+        Set<String> stocksCopy;
         String stockKey = context.getString(R.string.pref_stocks_copy_key);
         String initializedKey = context.getString(R.string.pref_stocks_copy_initialized_key);
-        Set<String> stocksCopy = getStocks(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean initialized = prefs.getBoolean(initializedKey, false);
+        if (initialized) {
+            stocksCopy = getStocksCopy(context);
+        } else {
+            stocksCopy = getStocks(context);
+        }
         stocksCopy.add(symbol);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putStringSet(stockKey, stocksCopy);
         editor.putBoolean(initializedKey, true);
