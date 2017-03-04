@@ -4,21 +4,21 @@
     <!--SHARED PREFERENCE KEYS-->
     <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
     <string name="pref_stocks_copy_initialized_key" translatable="false">initializedCopy</string>
-    <string name="pref_stocks_key">stocks</string>
-    <string name="pref_stocks_copy_key">stocksCopy</string>
+    <string name="pref_stocks_key" translatable="false">stocks</string>
+    <string name="pref_stocks_copy_key" translatable="false">stocksCopy</string>
 
     <!--DISPLAY MODE LITERALS-->
-    <string name="pref_display_mode_key">displayMode</string>
-    <string name="pref_display_mode_default">@string/pref_display_mode_percentage_key</string>
-    <string name="action_change_units">@string/pref_display_mode_key</string>
-    <string name="pref_display_mode_absolute_key">absolute</string>
-    <string name="pref_display_mode_percentage_key">percentage</string>
+    <string name="pref_display_mode_key" translatable="false">displayMode</string>
+    <string name="pref_display_mode_default" translatable="false">@string/pref_display_mode_percentage_key</string>
+    <string name="action_change_units" translatable="false">@string/pref_display_mode_key</string>
+    <string name="pref_display_mode_absolute_key" translatable="false">absolute</string>
+    <string name="pref_display_mode_percentage_key" translatable="false">percentage</string>
 
     <!--DEFAULT STOCK SYMBOLS FOR DEFAULT STOCKS ARRAY-->
-    <string name="default_stocks_yahoo">YHOO</string>
-    <string name="default_stocks_apple">AAPL</string>
-    <string name="default_stocks_microsoft">MSFT</string>
-    <string name="default_stocks_facebook">FB</string>
+    <string name="default_stocks_yahoo" translatable="false">YHOO</string>
+    <string name="default_stocks_apple" translatable="false">AAPL</string>
+    <string name="default_stocks_microsoft" translatable="false">MSFT</string>
+    <string name="default_stocks_facebook" translatable="false">FB</string>
 
     <!--ADD STOCK DIALOG BOX STRINGS-->
     <string name="dialog_title">Add Stock</string>
@@ -41,8 +41,15 @@
     
     <!--WIDGET STRINGS-->
     <string name="updated">updated\n</string>
-    <string name="widget_last_update_pref_key">widgetUpdateStringKey</string>
-    <string name="widget_update_init_pref_key">widgetUpdateInitKey</string>
     <string name="never">never</string>
+    <string name="widget_last_update_pref_key" translatable="false">widgetUpdateStringKey</string>
+    <string name="widget_update_init_pref_key" translatable="false">widgetUpdateInitKey</string>
+
+    <!--CONTENT DESCRIPTIONS-->
+    <string name="content_desc_main_float_act">Add a Stock</string>
+    <string name="content_desc_list_item">Go To Stock Price History</string>
+    <string name="content_desc_widget_title">Go To Stock Hawk App</string>
+    <string name="content_desc_widget_refresh">Refresh Widget</string>
+    <string name="content_desc_change_mode_menu_button">Select Stock Price Change in Absolute Dollars or Percent Change</string>
 
 </resources>
