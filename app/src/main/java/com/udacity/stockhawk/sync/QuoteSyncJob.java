@@ -148,6 +148,7 @@ public final class QuoteSyncJob {
                             quoteCVs.toArray(new ContentValues[quoteCVs.size()]));
             if (status == STOCK_STATUS_OK) {
                 dataUpdatedIntent.putExtra(ACTION_DATA_UPDATED_EXTRA_KEY, status);
+                dataUpdatedIntent.setPackage(context.getPackageName());
                 context.sendBroadcast(dataUpdatedIntent);
                 if (isInitializedCopy) {
                     PrefUtils.commitStocksCopy(context);
@@ -209,6 +210,4 @@ public final class QuoteSyncJob {
             scheduler.schedule(builder.build());
         }
     }
-
-
 }

@@ -6,12 +6,14 @@ import android.preference.PreferenceManager;
 
 import com.udacity.stockhawk.R;
 
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
-
-import timber.log.Timber;
 
 public final class PrefUtils {
 
@@ -141,4 +143,29 @@ public final class PrefUtils {
         editor.apply();
     }
 
+    public static String getLastWidgetUpdate(Context context) {
+        String updatedLabel = context.getResources().getString(R.string.updated);
+        String initKey = context.getResources().getString(R.string.widget_update_init_pref_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean initialized = prefs.getBoolean(initKey, false);
+        if (initialized) {
+            return updatedLabel + getFormattedLastUpdate();
+        } else {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean(initKey, true);
+            editor.apply();
+            return context.getResources().getString(R.string.never);
+        }
+    }
+
+    private static String getFormattedLastUpdate() {
+        Calendar calendar = new GregorianCalendar();
+        Long curTime = calendar.getTimeInMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("M/d h:mma", Locale.getDefault());
+        DateFormatSymbols symbols = new DateFormatSymbols(Locale.getDefault());
+        symbols.setAmPmStrings(new String[] { "a", "p" });
+        sdf.setDateFormatSymbols(symbols);
+        return sdf.format(curTime);
+
+    }
 }

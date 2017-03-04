@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        style="@style/WidgetBar"
+        android:layout_height="@dimen/widget_child_view_height">
+
+        <TextView
+            android:id="@+id/widget"
+            android:layout_width="wrap_content"
+            android:textSize="22sp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:textStyle="bold"
+            android:text="@string/app_name"/>
+
+        <TextView
+            android:id="@+id/widget_refresh_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="end"
+            android:textSize="12sp"
+            android:drawableEnd="@drawable/perm_group_sync_settings"/>
+
+        </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_child_view_height"
+        android:gravity="center"
+        android:fontFamily="sans-serif-condensed"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:background="?android:attr/colorBackground"
+        android:text="@string/empty_widget_list"/>
+
+    <ListView
+        android:id="@+id/widget_list"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/widget_min_height"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        tools:listitem="@layout/widget_list_item"/>
+
+</LinearLayout>

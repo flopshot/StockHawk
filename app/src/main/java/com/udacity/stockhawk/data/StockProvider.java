@@ -1,14 +1,18 @@
 package com.udacity.stockhawk.data;
 
+import android.appwidget.AppWidgetManager;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import timber.log.Timber;
 
 
 public class StockProvider extends ContentProvider {
@@ -105,6 +109,7 @@ public class StockProvider extends ContentProvider {
         Context context = getContext();
         if (context != null){
             context.getContentResolver().notifyChange(uri, null);
+            updateMyWidgets(context);
         }
 
         return returnUri;
@@ -144,6 +149,7 @@ public class StockProvider extends ContentProvider {
             Context context = getContext();
             if (context != null){
                 context.getContentResolver().notifyChange(uri, null);
+                updateMyWidgets(context);
             }
         }
 
@@ -180,13 +186,19 @@ public class StockProvider extends ContentProvider {
                 Context context = getContext();
                 if (context != null) {
                     context.getContentResolver().notifyChange(uri, null);
+                    updateMyWidgets(context);
                 }
 
                 return returnCount;
             default:
                 return super.bulkInsert(uri, values);
         }
+    }
 
-
+    public static void updateMyWidgets(Context context) {
+        Intent updateIntent = new Intent();
+        updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        context.sendBroadcast(updateIntent);
+        Timber.w("Calling Widget Update");
     }
 }

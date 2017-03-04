@@ -3,11 +3,11 @@ package com.udacity.stockhawk.ui;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -29,6 +29,7 @@ public class HistoryActivity extends AppCompatActivity
 
     private LineChart chart;
     private String mSymbol;
+    private Long mRowId;
     private static final int HISTORY_LOADER = 101;
     String[] mHistoryItems;
 
@@ -37,12 +38,15 @@ public class HistoryActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
-        Intent intentFromMain = getIntent();
-        mSymbol = intentFromMain.getStringExtra(Contract.Quote.COLUMN_SYMBOL);
-        chart = (LineChart) findViewById(R.id.historical_trend);
-        getSupportLoaderManager().initLoader(HISTORY_LOADER, null, this);
+        Intent intent = getIntent();
+        mSymbol = intent.getStringExtra(Contract.Quote.COLUMN_SYMBOL);
+
+        // Set Activity title to Symbol
         String activityTitle = mSymbol + getResources().getString(R.string.history_title);
         setTitle(activityTitle);
+
+        chart = (LineChart) findViewById(R.id.historical_trend);
+        getSupportLoaderManager().initLoader(HISTORY_LOADER, null, this);
     }
 
     @Override
@@ -58,11 +62,12 @@ public class HistoryActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if (cursor != null && cursor.moveToFirst()) {
-            String legendDesc = getResources().getString(R.string.legend);
+            int historyIndex = cursor.getColumnIndex((Contract.Quote.COLUMN_HISTORY));
+            String history = cursor.getString(historyIndex);
 
-            String history = cursor.getString(0);
             mHistoryItems = history.split("\\s*,\\s*");
             ArrayList<Entry> entries = getDataSet(mHistoryItems);
+            String legendDesc = getResources().getString(R.string.legend);
             LineDataSet dataSet = new LineDataSet(entries, legendDesc);
 
             LineData chartData = new LineData(dataSet);

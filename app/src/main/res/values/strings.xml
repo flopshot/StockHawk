@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Stock Hawk</string>
+    <string name="app_name">aStock Hawk</string>
 
     <!--SHARED PREFERENCE KEYS-->
     <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
@@ -33,9 +33,16 @@
     <string name="add_stock_status_unavailable">Stock Update Is Not Available At The Moment. Please Check Your Connection Settings</string>
     <string name="toast_stock_added_no_connectivity">Symbol %s added. Will refresh when network available.</string>
     <string name="toast_no_connectivity">Will refresh when network available.</string>
+    <string name="empty_widget_list">No Stocks To Display</string>
 
     <!--HISTORY ACTIVITY STRINGS-->
     <string name="legend">Closing Price</string>
-    <string name="history_title"> - 52 Week Trend</string>
+    <string name="history_title">" - 52 Week Trend"</string>
+    
+    <!--WIDGET STRINGS-->
+    <string name="updated">updated\n</string>
+    <string name="widget_last_update_pref_key">widgetUpdateStringKey</string>
+    <string name="widget_update_init_pref_key">widgetUpdateInitKey</string>
+    <string name="never">never</string>
 
 </resources>
