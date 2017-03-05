@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">aStock Hawk</string>
+    <string name="app_name">Stock Hawk</string>
 
     <!--SHARED PREFERENCE KEYS-->
     <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
